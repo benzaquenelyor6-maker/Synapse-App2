@@ -20,6 +20,15 @@ type QuizQuestion = { question: string; options: string[]; correctAnswer: string
 type Quiz = QuizQuestion[];
 
 export default function QuizPlayer({ quiz }: { quiz: Quiz }) {
+  // --- NOUVEAU : Vérification de sécurité ---
+  if (!quiz || quiz.length === 0) {
+    return (
+      <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
+        <Typography>L'IA n'a pas pu générer de quiz pour cette note.</Typography>
+      </Paper>
+    );
+  }
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [userAnswers, setUserAnswers] = React.useState<{[key: number]: string}>({});
   const [showScore, setShowScore] = React.useState(false);
@@ -50,7 +59,6 @@ export default function QuizPlayer({ quiz }: { quiz: Quiz }) {
   };
 
   if (showScore) {
-    console.log("Affichage des résultats. Quiz:", quiz, "Réponses utilisateur:", userAnswers);
     return (
       <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
         <Typography variant="h5">Résultat du Quiz</Typography>
