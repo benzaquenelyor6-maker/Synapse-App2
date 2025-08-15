@@ -20,97 +20,96 @@ type QuizQuestion = { question: string; options: string[]; correctAnswer: string
 type Quiz = QuizQuestion[];
 
 export default function QuizPlayer({ quiz }: { quiz: Quiz }) {
-  // --- NOUVEAU : Vérification de sécurité ---
-  if (!quiz || quiz.length === 0) {
-    return (
-      <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-        <Typography>L'IA n'a pas pu générer de quiz pour cette note.</Typography>
-      </Paper>
-    );
-  }
-
-  const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
-  const [userAnswers, setUserAnswers] = React.useState<{[key: number]: string}>({});
-  const [showScore, setShowScore] = React.useState(false);
-  const [score, setScore] = React.useState(0);
-
-  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserAnswers({
-      ...userAnswers,
-      [currentQuestionIndex]: event.target.value,
-    });
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < quiz.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    if (!quiz || quiz.length === 0) {
+        return (
+            <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
+                <Typography>L'IA n'a pas pu générer de quiz pour cette note.</Typography>
+            </Paper>
+        );
     }
-  };
 
-  const handleSubmit = () => {
-    let calculatedScore = 0;
-    quiz.forEach((question, index) => {
-      if (userAnswers[index] === question.correctAnswer) {
-        calculatedScore++;
-      }
-    });
-    setScore(calculatedScore);
-    setShowScore(true);
-  };
+    const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
+    const [userAnswers, setUserAnswers] = React.useState<{[key: number]: string}>({});
+    const [showScore, setShowScore] = React.useState(false);
+    const [score, setScore] = React.useState(0);
 
-  if (showScore) {
+    const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setUserAnswers({
+            ...userAnswers,
+            [currentQuestionIndex]: event.target.value,
+        });
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < quiz.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        }
+    };
+
+    const handleSubmit = () => {
+        let calculatedScore = 0;
+        quiz.forEach((question, index) => {
+            if (userAnswers[index] === question.correctAnswer) {
+                calculatedScore++;
+            }
+        });
+        setScore(calculatedScore);
+        setShowScore(true);
+    };
+
+    if (showScore) {
+        return (
+            <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
+                <Typography variant="h5">Résultat du Quiz</Typography>
+                <Typography variant="h6" sx={{ mt: 2 }}>
+                    Votre score : {score} / {quiz.length}
+                </Typography>
+                <List sx={{ mt: 2 }}>
+                    {quiz.map((q, index) => {
+                        const isCorrect = userAnswers[index] === q.correctAnswer;
+                        return (
+                            <ListItem key={index} sx={{ my: 1, border: 1, borderColor: isCorrect ? 'success.main' : 'error.main', borderRadius: 1 }}>
+                                <ListItemIcon>
+                                    {isCorrect ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={q.question}
+                                    secondary={`Votre réponse : ${userAnswers[index] || 'Aucune'}. Bonne réponse : ${q.correctAnswer}`}
+                                />
+                            </ListItem>
+                        );
+                    })}
+                </List>
+                <Button onClick={() => { setShowScore(false); setCurrentQuestionIndex(0); setUserAnswers({}); }} sx={{ mt: 2 }}>
+                    Recommencer le Quiz
+                </Button>
+            </Paper>
+        );
+    }
+
+    const currentQuestion = quiz[currentQuestionIndex];
+
     return (
-      <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-        <Typography variant="h5">Résultat du Quiz</Typography>
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Votre score : {score} / {quiz.length}
-        </Typography>
-        <List sx={{ mt: 2 }}>
-          {quiz.map((q, index) => {
-            const isCorrect = userAnswers[index] === q.correctAnswer;
-            return (
-              <ListItem key={index} sx={{ my: 1, border: 1, borderColor: isCorrect ? 'success.main' : 'error.main', borderRadius: 1 }}>
-                <ListItemIcon>
-                  {isCorrect ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={q.question}
-                  secondary={`Votre réponse : ${userAnswers[index] || 'Aucune'}. Bonne réponse : ${q.correctAnswer}`}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
-        <Button onClick={() => { setShowScore(false); setCurrentQuestionIndex(0); setUserAnswers({}); }} sx={{ mt: 2 }}>
-          Recommencer le Quiz
-        </Button>
-      </Paper>
+        <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Question {currentQuestionIndex + 1} / {quiz.length}</Typography>
+            <Typography variant="body1">{currentQuestion.question}</Typography>
+            <FormControl sx={{ mt: 2 }}>
+                <RadioGroup
+                    value={userAnswers[currentQuestionIndex] || ''}
+                    onChange={handleOptionChange}
+                >
+                    {currentQuestion.options.map((option, index) => (
+                        <FormControlLabel key={index} value={option} control={<Radio />} label={option} />
+                    ))}
+                </RadioGroup>
+            </FormControl>
+            <Box sx={{ mt: 2 }}>
+                {currentQuestionIndex < quiz.length - 1 ? (
+                    <Button variant="contained" onClick={handleNext}>Suivant</Button>
+                ) : (
+                    <Button variant="contained" color="primary" onClick={handleSubmit}>Terminer le Quiz</Button>
+                )}
+            </Box>
+        </Paper>
     );
-  }
-
-  const currentQuestion = quiz[currentQuestionIndex];
-
-  return (
-    <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>Question {currentQuestionIndex + 1} / {quiz.length}</Typography>
-      <Typography variant="body1">{currentQuestion.question}</Typography>
-      <FormControl sx={{ mt: 2 }}>
-        <RadioGroup
-          value={userAnswers[currentQuestionIndex] || ''}
-          onChange={handleOptionChange}
-        >
-          {currentQuestion.options.map((option, index) => (
-            <FormControlLabel key={index} value={option} control={<Radio />} label={option} />
-          ))}
-        </RadioGroup>
-      </FormControl>
-      <Box sx={{ mt: 2 }}>
-        {currentQuestionIndex < quiz.length - 1 ? (
-          <Button variant="contained" onClick={handleNext}>Suivant</Button>
-        ) : (
-          <Button variant="contained" color="primary" onClick={handleSubmit}>Terminer le Quiz</Button>
-        )}
-      </Box>
-    </Paper>
-  );
 }
